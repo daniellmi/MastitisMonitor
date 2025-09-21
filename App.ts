@@ -38,10 +38,10 @@
         this.app.use(express.json());
         this.app.use(cors());
         this.app.use(this.routes.getRouter());
-        this.app.use('/',express.static(path.join(this.__dirname, 'view/frontend/dist')));
-        this.app.get('/{*any}', (req: Request, res: Response) => {
-            res.sendFile(path.join(this.__dirname, 'view/frontend/dist', 'index.html'));
-        })
+        //this.app.use('/',express.static(path.join(this.__dirname, 'view/frontend/dist')));
+      //  this.app.get('/{*any}', (req: Request, res: Response) => {
+        //    res.sendFile(path.join(this.__dirname, 'view/frontend/dist', 'index.html'));
+//})
     }
     }
 
