@@ -46,7 +46,7 @@ class Database extends OpenGauss {
     }
 
     queryAll(callback) {
-        this.query(`SELECT * FROM cows`, result => {
+        this.query(`SELECT * FROM cows ORDER BY cod_cow`, result => {
             callback(result);
         })
     }
