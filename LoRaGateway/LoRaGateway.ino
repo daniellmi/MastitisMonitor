@@ -1,88 +1,91 @@
-#include <Wire.h>
-#include <Adafruit_MLX90614.h>
-#include <MPU6050.h>
-#include <TinyGPSPlus.h>
-#include <HardwareSerial.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
 #include <SPI.h>
 #include <LoRa.h>
 
-#define LORA_SCK 5
-#define LORA_MISO 19
-#define LORA_MOSI 27
-#define LORA_CS 18
-#define LORA_RST 14
-#define LORA_IRQ 26
-#define LORA_FREQ 915E6
+const char *ssid = "GRACA OI 2.4";
+const char *password = "MG090458";
+String server = "http://190.92.199.156/api/temp";
 
-Adafruit_MLX90614 mlx = Adafruit_MLX90614();
-MPU6050 mpu(Wire);
-TinyGPSPlus gps;
-HardwareSerial SerialGPS(2);
+WiFiClient client;
 
-unsigned long lastSend = 0;
-const unsigned long interval = 60000;
+#define LORA_SS 15   // CS
+#define LORA_RST 16  // RST
+#define LORA_DIO0 2  // DIO0
 
 void setup() {
-  Serial.begin(115200);
-  Wire.begin();
-  mlx.begin();
-  mpu.begin();
-  mpu.calcGyroOffsets(true);
-  SerialGPS.begin(9600, SERIAL_8N1, 16, 17);
-  SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI);
-  LoRa.setPins(LORA_CS, LORA_RST, LORA_IRQ);
-  if (!LoRa.begin(LORA_FREQ)) {
+  Serial.begin(9600);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi conectado");
+  Serial.println(WiFi.localIP());
+
+  LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
+  if (!LoRa.begin(915E6)) {
+    Serial.println("Falha ao iniciar LoRa!");
     while (1);
   }
+  Serial.println("LoRa OK, aguardando pacotes...");
 }
 
 void loop() {
-  while (SerialGPS.available() > 0) {
-    gps.encode(SerialGPS.read());
-  }
-  mpu.update();
-  if (millis() - lastSend >= interval) {
-    lastSend = millis();
-    int32_t lat_i = 0, lon_i = 0;
-    uint8_t flags = 0;
-    if (gps.location.isValid()) {
-      lat_i = (int32_t)(gps.location.lat() * 1e5);
-      lon_i = (int32_t)(gps.location.lng() * 1e5);
-      flags |= 0x01;
+  int packetSize = LoRa.parsePacket();
+  if (packetSize) {
+    uint8_t payload[32];
+    int len = 0;
+    while (LoRa.available() && len < sizeof(payload)) {
+      payload[len++] = LoRa.read();
     }
-    float temp = mlx.readObjectTempC();
-    int16_t temp_i = (int16_t)round(temp * 100.0f);
-    float ax = mpu.getAccX();
-    float ay = mpu.getAccY();
-    float az = mpu.getAccZ();
-    int16_t ax_i = (int16_t)round(ax * 1000.0f);
-    int16_t ay_i = (int16_t)round(ay * 1000.0f);
-    int16_t az_i = (int16_t)round(az * 1000.0f);
-    uint8_t payload[17];
-    int idx = 0;
-    payload[idx++] = (lat_i >> 24) & 0xFF;
-    payload[idx++] = (lat_i >> 16) & 0xFF;
-    payload[idx++] = (lat_i >> 8) & 0xFF;
-    payload[idx++] = (lat_i) & 0xFF;
-    payload[idx++] = (lon_i >> 24) & 0xFF;
-    payload[idx++] = (lon_i >> 16) & 0xFF;
-    payload[idx++] = (lon_i >> 8) & 0xFF;
-    payload[idx++] = (lon_i) & 0xFF;
-    payload[idx++] = (temp_i >> 8) & 0xFF;
-    payload[idx++] = (temp_i) & 0xFF;
-    payload[idx++] = (ax_i >> 8) & 0xFF;
-    payload[idx++] = (ax_i) & 0xFF;
-    payload[idx++] = (ay_i >> 8) & 0xFF;
-    payload[idx++] = (ay_i) & 0xFF;
-    payload[idx++] = (az_i >> 8) & 0xFF;
-    payload[idx++] = (az_i) & 0xFF;
-    payload[idx++] = flags & 0xFF;
-    LoRa.beginPacket();
-    LoRa.write(payload, idx);
-    LoRa.endPacket();
-    Serial.printf("Enviado: lat=%ld lon=%ld temp=%d ax=%d ay=%d az=%d flags=0x%02X\n",
-                  lat_i, lon_i, temp_i, ax_i, ay_i, az_i, flags);
-  }
-  delay(10);
-}
 
+    if (len >= 17) {
+      int idx = 0;
+      int32_t lat_i = (payload[idx++] << 24) | (payload[idx++] << 16) | (payload[idx++] << 8) | payload[idx++];
+      int32_t lon_i = (payload[idx++] << 24) | (payload[idx++] << 16) | (payload[idx++] << 8) | payload[idx++];
+      int16_t temp_i = (payload[idx++] << 8) | payload[idx++];
+      int16_t ax_i = (payload[idx++] << 8) | payload[idx++];
+      int16_t ay_i = (payload[idx++] << 8) | payload[idx++];
+      int16_t az_i = (payload[idx++] << 8) | payload[idx++];
+      uint8_t flags = payload[idx++];
+
+      float lat = lat_i / 1e5;
+      float lon = lon_i / 1e5;
+      float temp = temp_i / 100.0;
+      float ax = ax_i / 1000.0;
+      float ay = ay_i / 1000.0;
+      float az = az_i / 1000.0;
+
+      Serial.printf("Lat: %.5f, Lon: %.5f, Temp: %.2f, Ax: %.3f, Ay: %.3f, Az: %.3f, Flags: %u\n",
+                    lat, lon, temp, ax, ay, az, flags);
+
+      if (WiFi.status() == WL_CONNECTED) {
+        HTTPClient http;
+        http.begin(client, server);
+        http.addHeader("Content-Type", "application/json");
+
+        String json = "{";
+        json += "\"lat\": " + String(lat, 5) + ",";
+        json += "\"lon\": " + String(lon, 5) + ",";
+        json += "\"temperature\": " + String(temp, 2) + ",";
+        json += "\"ax\": " + String(ax, 3) + ",";
+        json += "\"ay\": " + String(ay, 3) + ",";
+        json += "\"az\": " + String(az, 3) + ",";
+        json += "\"flags\": " + String(flags);
+        json += "}";
+
+        int httpCode = http.POST(json);
+        if (httpCode > 0) {
+          String response = http.getString();
+          Serial.println(response);
+        } else {
+          Serial.println("request failed");
+        }
+        http.end();
+      }
+    }
+  }
+}
