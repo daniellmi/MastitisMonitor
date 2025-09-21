@@ -60,6 +60,51 @@ Database: OpenGauss
 
 IoT & Hardware: MAX30100, ESP8266, LoRa
 
-Frontend (in progress): React Native
+Mobile App (in progress): React Native
 
 Other: Big Data analytics, Predictive modeling
+
+📱 Mobile App (React Native)
+
+The mobile app will soon be integrated into this repository under /mobile/.
+It will allow farmers to:
+
+Monitor real-time animal health data
+
+Receive alerts on mastitis risk
+
+Access historical reports and insights
+
+🌍 Target Users
+
+Small dairy farmers
+
+Cooperatives and veterinary associations
+
+Agritech companies
+
+📈 Future Roadmap
+
+ Full integration with Huawei IoTDA for secure device management
+
+ Advanced predictive analytics with Huawei Cloud Big Data services
+
+ Deployment guide for cooperatives and large-scale farms
+
+ Web dashboard for veterinarians and farm managers
+
+ React Native mobile app release
+
+👨‍💻 Contributors
+
+Daniel Miranda – Backend & Cloud Deployment
+
+G.E.C.A Team – IoT Hardware & Mobile Development
+
+IFBA Jequié – Research & Innovation
+
+📬 Contact
+
+📧 danielmirandaticc@gmail.com
+
+📱 +55 (73) 9865-0508
