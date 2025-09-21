@@ -64,6 +64,8 @@ Mobile App (in progress): React Native
 
 Other: Big Data analytics, Predictive modeling
 
+```
+
 📱 Mobile App (React Native)
 
 The mobile app will soon be integrated into this repository under /mobile/.
