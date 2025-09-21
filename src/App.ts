@@ -1,9 +1,10 @@
     import express, {Request, Response} from "express";
     import type { Application } from "express";
-    import Routes from "./controller/routes/Routes.ts";
+    import Routes from "./controller/routes/Routes.ts"
     import cors from "cors";
     import path, {dirname} from "path";
     import { fileURLToPath } from 'url';
+    import dotenv from 'dotenv'
     // @ts-ignore 
     import dbs from './model/Database.js'
 
@@ -14,13 +15,13 @@
     private app: Application;
     private routes: Routes;
 
-    public constructor(port: number) {
+    public constructor() {
+    dotenv.config({quiet: true});    
 
-    this.port = port;
+    this.port = Number(process.env.PORT);
     this.__dirname = dirname(fileURLToPath(import.meta.url));
 
     this.routes = new Routes();
-
     this.app = express();
     this.middleware();
     this.listen();
@@ -45,11 +46,10 @@
     }
     }
 
-const app: App = new App(5000);
+const app: App = new App();
 
  try {
  dbs.connect_database();
- console.log(`opengauss connected succesfully!`);
 }
 
 catch(e) {

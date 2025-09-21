@@ -1,12 +1,15 @@
 //@ts-nocheck
 import OpenGauss from 'node-opengauss';
+import dotenv from 'dotenv'
+
+dotenv.config({quiet: true});
 
 const config = {
-    host: '192.168.57.3',
-    port: 26000,
-    username: 'daniel',
+    host: process.env.host,
+    port: process.env.db_port,
+    username: process.env.username,
     database: 'cattle',
-    password: '1234@qwe'
+    password: process.env.password
 }
 
 class Database extends OpenGauss {
@@ -18,6 +21,7 @@ class Database extends OpenGauss {
     async connect_database() {
         await this.connect(config);
     }
+
 
  findRecord(client_cod, callback) {
 
