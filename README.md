@@ -77,8 +77,8 @@ Receive alerts on mastitis risk
 
 Access historical reports and insights
 
-<img width="600" height="600" alt="mastite_tela_branco" src="https://github.com/user-attachments/assets/eb588448-b282-4213-8324-11f3ca36e4fb" />
- 
+ <img width="606" height="1237" alt="bootsplash img" src="https://github.com/user-attachments/assets/7842c5aa-0767-45c7-8e39-4ca13edbc17f" />
+
 🌍 Target Users
 
 Small dairy farmers
