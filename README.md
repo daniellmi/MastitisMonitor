@@ -77,8 +77,10 @@ Receive alerts on mastitis risk
 
 Access historical reports and insights
 
- <img width="202" height="412" alt="bootsplash img" src="https://github.com/user-attachments/assets/7842c5aa-0767-45c7-8e39-4ca13edbc17f" />
 
+ <img width="202" height="412" alt="bootsplash img" src="https://github.com/user-attachments/assets/7842c5aa-0767-45c7-8e39-4ca13edbc17f" />
+ 
+ 
 🌍 Target Users
 
 Small dairy farmers
